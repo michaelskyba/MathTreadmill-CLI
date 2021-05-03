@@ -1,1 +1,1 @@
-# MathTreadmill-CLI
+# MathTreadmill-TUI
