@@ -3,18 +3,77 @@
 import curses
 import time
 
+# Print some text
 def text(text, y, stdscr):
+    # Find the middle of the screen
     mx = stdscr.getmaxyx()[1]//2
     my = stdscr.getmaxyx()[0]//2
+
+    # Subtract len(text)//2 to adjust for the length of the text
     stdscr.addstr(my + y, mx - len(text)//2, text)
     stdscr.refresh()
 
-def main(stdscr):
+# The main selection menu
+def main_menu(stdscr, sel_row):
+    options = [{
+                "text": "Welcome to MathTreadmill",
+                "y": -5
+            },
+            {
+                "text": "Auto Mode",
+                "y": 1
+            },
+            {
+                "text": "Custom Mode",
+                "y": 2
+            }]
 
+    for index, option in enumerate(options):
+        if sel_row == index:
+            # This reverses the background colour for the selected option
+            stdscr.attron(curses.color_pair(1))
+            text(option["text"], option["y"], stdscr)
+            stdscr.attroff(curses.color_pair(1))
+
+        else:
+            text(option["text"], option["y"], stdscr)
+
+
+def main(stdscr):
+    # Set up colours
+    curses.curs_set(0)
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+
+    # Starting screen
+    state = "main_menu"
+    sel_row = 1
+    main_menu(stdscr, sel_row)
+
+    # Main loop
     while 1:
-        text("Welcome to MathTreadmill!", -5, stdscr)
-        text("14 + 123 = ?", 0, stdscr)
-        text("14s remaining", 0, stdscr)
-        time.sleep(4)
+        # Get the pressed key
+        key = stdscr.getch()
+
+        # Quit with "q"
+        if key == 113:
+            break
+
+        # Main menu
+        elif state == "main_menu":
+            # Pressing 'down' or 'j' selects the "Custom Mode" option
+            if key in [curses.KEY_DOWN, 106]:
+                sel_row = 2
+                main_menu(stdscr, sel_row)
+
+            # Pressing 'up' or 'k' selects the "Auto Mode" option
+            elif key in [curses.KEY_UP, 107]:
+                sel_row = 1
+                main_menu(stdscr, sel_row)
+
+            # Pressing enter goes into the option
+            elif key in [curses.KEY_ENTER, 10, 13]:
+                stdscr.clear()
+
+                text("You selected '{option} Mode'!".format(option=["Auto", "Custom"][sel_row-1]), 0, stdscr)
 
 curses.wrapper(main)
