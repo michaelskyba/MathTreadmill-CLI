@@ -60,20 +60,24 @@ def main(stdscr):
 
         # Main menu
         elif state == "main_menu":
-            # Pressing 'down' or 'j' selects the "Custom Mode" option
-            if key in [curses.KEY_DOWN, 106]:
-                sel_row = 2
-                main_menu(stdscr, sel_row)
-
             # Pressing 'up' or 'k' selects the "Auto Mode" option
             elif key in [curses.KEY_UP, 107]:
                 sel_row = 1
+                main_menu(stdscr, sel_row)
+
+            # Pressing 'down' or 'j' selects the "Custom Mode" option
+            if key in [curses.KEY_DOWN, 106]:
+                sel_row = 2
                 main_menu(stdscr, sel_row)
 
             # Pressing enter goes into the option
             elif key in [curses.KEY_ENTER, 10, 13]:
                 stdscr.clear()
 
-                text("You selected '{option} Mode'!".format(option=["Auto", "Custom"][sel_row-1]), 0, stdscr)
+                if sel_row == 1:
+                    text("Question: 0", 0, stdscr)
+
+                else:
+                    text("What would you like..?", 0, stdscr)
 
 curses.wrapper(main)
