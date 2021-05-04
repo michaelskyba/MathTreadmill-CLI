@@ -2,6 +2,7 @@
 
 import curses
 import time
+import datetime
 
 # Print some text
 def text(text, y, stdscr):
@@ -44,6 +45,8 @@ def main(stdscr):
     curses.curs_set(0)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
+    stdscr.nodelay(True)
+
     # Starting screen
     state = "main_menu"
     sel_row = 1
@@ -61,12 +64,12 @@ def main(stdscr):
         # Main menu
         elif state == "main_menu":
             # Pressing 'up' or 'k' selects the "Auto Mode" option
-            elif key in [curses.KEY_UP, 107]:
+            if key in [curses.KEY_UP, 107]:
                 sel_row = 1
                 main_menu(stdscr, sel_row)
 
             # Pressing 'down' or 'j' selects the "Custom Mode" option
-            if key in [curses.KEY_DOWN, 106]:
+            elif key in [curses.KEY_DOWN, 106]:
                 sel_row = 2
                 main_menu(stdscr, sel_row)
 
@@ -75,9 +78,34 @@ def main(stdscr):
                 stdscr.clear()
 
                 if sel_row == 1:
-                    text("Question: 0", 0, stdscr)
+                    state = "auto"
+
+                    question = "16 - 14"
+                    current_value = ""
+
+                    sec_total = 60
+                    sec_rem = 60
+
+                    question_start = datetime.datetime.now()
+
+                    bars = round(sec_total / sec_rem * 20)
 
                 else:
+                    state = "custom"
                     text("What would you like..?", 0, stdscr)
+
+        # Auto Mode
+        elif state == "auto":
+            sec_rem = sec_total - (datetime.datetime.now() - question_start).seconds
+            bars = round(sec_rem / sec_total * 20)
+
+            if sec_rem < 10:
+                sec_rem = " {}".format(sec_rem)
+
+            text("{} = ?".format(question), -1, stdscr)
+            text("> {}_".format(current_value), 0, stdscr)
+
+            text("|{bar}{space}|".format(bar="█"*bars, space=" "*(20-bars)), 3, stdscr)
+            text("{sec}s left".format(sec=sec_rem), 4, stdscr)
 
 curses.wrapper(main)
