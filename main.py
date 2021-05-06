@@ -24,11 +24,11 @@ def get_question(skill):
     question_line = skill_lines[question_id]
     question_line = question_line.split()
 
+    x = random.randint(int(question_line[1]), int(question_line[2]))
+    y = random.randint(int(question_line[3]), int(question_line[4]))
+
     # Addition
     if question_line[0] == "A":
-        x = random.randint(int(question_line[1]), int(question_line[2]))
-        y = random.randint(int(question_line[3]), int(question_line[4]))
-
         if random.randint(1, 2) == 1:
             question = "{} + {}".format(x, y)
         else:
@@ -38,8 +38,24 @@ def get_question(skill):
 
     # Subtraction
     elif question_line[0] == "S":
-        question = "Sample subtraction question (10)"
-        answer = 10
+        # "AN" is not written
+        if len(question_line) == 5:
+            if random.randint(1, 2) == 1:
+                question = "{} - {}".format(x + y, y)
+                answer = x
+            else:
+                question = "{} - {}".format(x + y, x)
+                answer = y
+
+        # AN _is_ written (allow negatives)
+        else:
+            if random.randint(1, 2) == 1:
+                question = "{} - {}".format(x, y)
+                answer = x - y
+            else:
+                question = "{} - {}".format(y, x)
+                answer = y - x
+
 
     # Multiplication
     elif question_line[0] == "M":
