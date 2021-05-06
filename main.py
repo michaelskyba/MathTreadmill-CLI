@@ -26,8 +26,15 @@ def get_question(skill):
 
     # Addition
     if question_line[0] == "A":
-        question = "Sample addition question (10)"
-        answer = 10
+        x = random.randint(int(question_line[1]), int(question_line[2]))
+        y = random.randint(int(question_line[3]), int(question_line[4]))
+
+        if random.randint(1, 2) == 1:
+            question = "{} + {}".format(x, y)
+        else:
+            question = "{} + {}".format(y, x)
+
+        answer = x + y
 
     # Subtraction
     elif question_line[0] == "S":
