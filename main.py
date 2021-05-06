@@ -59,23 +59,35 @@ def get_question(skill):
 
     # Multiplication
     elif question_line[0] == "M":
-        question = "Sample multiplication question (10)"
-        answer = 10
+        if random.randint(1, 2) == 1:
+            question = "{} × {}".format(x, y)
+        else:
+            question = "{} × {}".format(y, x)
+
+        answer = x * y
 
     # Division
     elif question_line[0] == "D":
-        question = "Sample division question (10)"
-        answer = 10
+        if random.randint(1, 2) == 1:
+            question = "{} ÷ {}".format(x * y, y)
+            answer = x
+        else:
+            question = "{} ÷ {}".format(x * y, x)
+            answer = y
 
     # Exponents
     elif question_line[0] == "E":
-        question = "Sample exponent question (10)"
-        answer = 10
+        question = "{}^{}".format(x, y)
+        answer = x ** y
 
     # Roots
     elif question_line[0] == "R":
-        question = "Sample root question (10)"
-        answer = 10
+        if random.randint(1, 2) == 1:
+            question = "{} + {}".format(x, y)
+        else:
+            question = "{} + {}".format(y, x)
+
+        answer = x + y
 
     return {
             "question": question,
