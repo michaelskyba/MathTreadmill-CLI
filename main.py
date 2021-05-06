@@ -7,6 +7,12 @@ import os
 import random
 import math
 
+def z(number):
+    if number < 0:
+        return "({})".format(number)
+    else:
+        return number
+
 def get_question(skill):
     # List of lines in the file that are for this skill
     skill_lines = []
@@ -31,9 +37,9 @@ def get_question(skill):
     # Addition
     if question_line[0] == "A":
         if random.randint(1, 2) == 1:
-            question = "{} + {}".format(x, y)
+            question = "{} + {}".format(z(x), z(y))
         else:
-            question = "{} + {}".format(y, x)
+            question = "{} + {}".format(z(y), z(x))
 
         answer = x + y
 
@@ -42,38 +48,38 @@ def get_question(skill):
         # "AN" is not written
         if len(question_line) == 5:
             if random.randint(1, 2) == 1:
-                question = "{} - {}".format(x + y, y)
+                question = "{} - {}".format(z(x + y), z(y))
                 answer = x
             else:
-                question = "{} - {}".format(x + y, x)
+                question = "{} - {}".format(z(x + y), z(x))
                 answer = y
 
         # AN _is_ written (allow negatives)
         else:
             if random.randint(1, 2) == 1:
-                question = "{} - {}".format(x, y)
+                question = "{} - {}".format(z(x), z(y))
                 answer = x - y
             else:
-                question = "{} - {}".format(y, x)
+                question = "{} - {}".format(z(y), z(x))
                 answer = y - x
 
 
     # Multiplication
     elif question_line[0] == "M":
         if random.randint(1, 2) == 1:
-            question = "{} × {}".format(x, y)
+            question = "{} × {}".format(z(x), z(y))
         else:
-            question = "{} × {}".format(y, x)
+            question = "{} × {}".format(z(y), z(x))
 
         answer = x * y
 
     # Division
     elif question_line[0] == "D":
         if random.randint(1, 2) == 1:
-            question = "{} ÷ {}".format(x * y, y)
+            question = "{} ÷ {}".format(z(x * y), z(y))
             answer = x
         else:
-            question = "{} ÷ {}".format(x * y, x)
+            question = "{} ÷ {}".format(z(x * y), z(x))
             answer = y
 
     # Exponents
@@ -264,6 +270,7 @@ def main(stdscr):
             elif key in [curses.KEY_ENTER, 10, 13]:
                 if len(current_value) > 0 and int(current_value) == answer:
                     # Update to next question
+                    stdscr.clear()
                     skill += 1
 
                     question_object = get_question(skills[skill])
