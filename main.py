@@ -82,12 +82,14 @@ def get_question(skill):
 
     # Roots
     elif question_line[0] == "R":
-        if random.randint(1, 2) == 1:
-            question = "{} + {}".format(x, y)
+        if y == 2:
+            question = "sqrt {}".format(x**y)
+        elif y == 3:
+            question = "cube root of {}".format(x**y)
         else:
-            question = "{} + {}".format(y, x)
+            question = "{}th root of {}".format(y, x**y)
 
-        answer = x + y
+        answer = x
 
     return {
             "question": question,
