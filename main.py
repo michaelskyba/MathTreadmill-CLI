@@ -5,6 +5,7 @@ import time
 import datetime
 import os
 import random
+import math
 
 def get_question(skill):
     # List of lines in the file that are for this skill
@@ -155,7 +156,8 @@ def main(stdscr):
 
     stdscr.nodelay(True)
 
-    skill = "1.1"
+    skills = ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3", "2.4", "3.1", "3.2", "3.3", "3.4", "4.1", "4.2", "4.3", "4.4", "5.1", "5.2", "5.3", "5.4", "SSS"]
+    skill = 0
 
     # Starting screen
     state = "main_menu"
@@ -190,14 +192,17 @@ def main(stdscr):
                 if sel_row == 1:
                     state = "auto"
 
-                    question_object = get_question(skill)
+                    question_object = get_question(skills[skill])
                     question = question_object["question"]
+                    answer = question_object["answer"]
 
-                    config_object = configure(skill)
+                    config_object = configure(skills[skill])
                     sec_total = int(config_object["total_time"])
                     sec_rem = sec_total
                     decrement = config_object["decrement"]
                     threshold = config_object["threshold"]
+
+                    wrong = 0
 
                     current_value = ""
 
@@ -213,6 +218,7 @@ def main(stdscr):
         elif state == "auto":
             # Calculate bar numbers
             sec_rem = sec_total - (datetime.datetime.now() - question_start).seconds
+            sec_rem -= wrong # Split the bar in half every time you get it wrong
             bars = round(sec_rem / sec_total * 20)
 
             # Clear old number
@@ -220,7 +226,7 @@ def main(stdscr):
                 sec_rem = " {}".format(sec_rem)
 
             # Skill
-            text(str(skill), -5, stdscr)
+            text(str(skills[skill]), -5, stdscr)
 
             # Question
             text("{} = ?".format(question), -1, stdscr)
@@ -234,8 +240,6 @@ def main(stdscr):
             # Time text
             text("{sec}s left".format(sec=sec_rem), 4, stdscr)
 
-            # text(configure(skill), 6, stdscr)
-
             # 0-9
             if key in range(48, 58):
                 current_value += str(key - 48)
@@ -244,8 +248,49 @@ def main(stdscr):
                 if len(current_value) > 6:
                     current_value = current_value[:-1]
 
+            # Input negative numbers
+            if key == 45:
+                current_value += "-"
+
+                # Make sure value doesn't exceed space
+                if len(current_value) > 6:
+                    current_value = current_value[:-1]
+
             # Backspace
             elif key in [8, curses.KEY_BACKSPACE]:
                 current_value = current_value[:-1]
+
+            # Enter, to submit an answer
+            elif key in [curses.KEY_ENTER, 10, 13]:
+                if len(current_value) > 0 and int(current_value) == answer:
+                    # Update to next question
+                    skill += 1
+
+                    question_object = get_question(skills[skill])
+                    question = question_object["question"]
+                    answer = question_object["answer"]
+
+                    config_object = configure(skills[skill])
+                    sec_total = int(config_object["total_time"])
+                    sec_rem = sec_total
+                    decrement = config_object["decrement"]
+                    threshold = config_object["threshold"]
+
+                    wrong = 0
+
+                    current_value = ""
+
+                    question_start = datetime.datetime.now()
+
+                    bars = round(sec_total / sec_rem * 20)
+
+                elif len(current_value) > 0:
+                    # First get the remaining seconds (it's currently a string)
+                    sec_rem = sec_total - (datetime.datetime.now() - question_start).seconds
+                    sec_rem -= wrong
+                    wrong += math.floor(sec_rem / 2)
+
+                    # Clear typed answer
+                    current_value = ""
 
 curses.wrapper(main)
