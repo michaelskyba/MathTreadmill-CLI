@@ -163,7 +163,28 @@ def main(stdscr):
     stdscr.nodelay(True)
 
     skills = ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3", "2.4", "3.1", "3.2", "3.3", "3.4", "4.1", "4.2", "4.3", "4.4", "5.1", "5.2", "5.3", "5.4", "SSS"]
-    skill = 0
+
+    # Decide whether or not to create the file
+    create = True
+
+    if os.path.exists("auto_progress"):
+        create = False
+
+        # If you have a progress file, get the saved skill from it
+        with open("auto_progress") as auto_progress:
+            try:
+                skill = skills.index(auto_progress.readlines()[0])
+
+            except:
+                # They have a file but something is wrong with it
+                create = True
+
+    # Create the skills file if it doesn't exist
+    if create:
+        skill = 0
+
+        with open("auto_progress", "w") as auto_progress:
+            auto_progress.write("1.1")
 
     # Starting screen
     state = "main_menu"
@@ -301,6 +322,10 @@ def main(stdscr):
                     # Go to next skill if you finish the current one
                     if sec_total < threshold:
                         skill += 1
+
+                        # Update the skill in the savefile
+                        with open("auto_progress", "w") as auto_progress:
+                            auto_progress.write(skills[skill])
 
                         config_object = configure(skills[skill])
                         sec_total = config_object["total_time"]
