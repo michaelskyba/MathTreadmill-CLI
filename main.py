@@ -113,9 +113,9 @@ def configure(skill):
             if line[:3] == skill:
                 config = line[3:].split()
                 return {
-                        "total_time": config[0],
-                        "decrement": config[1],
-                        "threshold": config[2]
+                        "total_time": int(float(config[0])),
+                        "decrement": int(float(config[1])),
+                        "threshold": int(float(config[2]))
                         }
 
 # Print some text
@@ -203,7 +203,7 @@ def main(stdscr):
                     answer = question_object["answer"]
 
                     config_object = configure(skills[skill])
-                    sec_total = int(config_object["total_time"])
+                    sec_total = config_object["total_time"]
                     sec_rem = sec_total
                     decrement = config_object["decrement"]
                     threshold = config_object["threshold"]
@@ -226,6 +226,23 @@ def main(stdscr):
             sec_rem = sec_total - (datetime.datetime.now() - question_start).seconds
             sec_rem -= wrong # Split the bar in half every time you get it wrong
             bars = round(sec_rem / sec_total * 20)
+
+            # Running out of time
+            if sec_rem <= 0:
+                state = "fail"
+
+                stdscr.clear()
+
+                text("You ran out of time.", -5, stdscr)
+
+                # Show correct answer
+                text("{} = {}".format(question, answer), -1, stdscr)
+
+                # Instructions
+                text("Press ENTER to try again.", 4, stdscr)
+
+                # Quesion resetting is handled in the fail state
+                continue
 
             # Clear old number
             if sec_rem < 10:
@@ -270,26 +287,30 @@ def main(stdscr):
             elif key in [curses.KEY_ENTER, 10, 13]:
                 if len(current_value) > 0 and int(current_value) == answer:
                     # Update to next question
-                    stdscr.clear()
-                    skill += 1
 
+                    # Clear screen to avoid extra characters
+                    stdscr.clear()
+
+                    # Use decrement
+                    sec_total -= decrement
+
+                    # Go to next skill if you finish the current one
+                    if sec_total < threshold:
+                        skill += 1
+
+                        config_object = configure(skills[skill])
+                        sec_total = config_object["total_time"]
+                        decrement = config_object["decrement"]
+                        threshold = config_object["threshold"]
+
+                    # Get the new question
                     question_object = get_question(skills[skill])
                     question = question_object["question"]
                     answer = question_object["answer"]
 
-                    config_object = configure(skills[skill])
-                    sec_total = int(config_object["total_time"])
-                    sec_rem = sec_total
-                    decrement = config_object["decrement"]
-                    threshold = config_object["threshold"]
-
                     wrong = 0
-
                     current_value = ""
-
                     question_start = datetime.datetime.now()
-
-                    bars = round(sec_total / sec_rem * 20)
 
                 elif len(current_value) > 0:
                     # First get the remaining seconds (it's currently a string)
@@ -299,5 +320,24 @@ def main(stdscr):
 
                     # Clear typed answer
                     current_value = ""
+
+        # Game Over screen
+        elif state == "fail" and key in [curses.KEY_ENTER, 10, 13]:
+            # Reset
+            sec_total = config_object["total_time"]
+            wrong = 0
+            current_value = ""
+            question_start = datetime.datetime.now()
+
+            # Get the new question
+            question_object = get_question(skills[skill])
+            question = question_object["question"]
+            answer = question_object["answer"]
+
+            # Run everything again
+            state = "auto"
+
+            # Remove noise from Game Over screen
+            stdscr.clear()
 
 curses.wrapper(main)
