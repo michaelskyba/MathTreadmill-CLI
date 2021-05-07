@@ -114,7 +114,7 @@ def configure(skill):
                 config = line[3:].split()
                 return {
                         "total_time": int(float(config[0])),
-                        "decrement": int(float(config[1])),
+                        "decrement": float(config[1]),
                         "threshold": int(float(config[2]))
                         }
 
@@ -243,6 +243,10 @@ def main(stdscr):
 
                 # Quesion resetting is handled in the fail state
                 continue
+
+            # Avoid having decimals by default
+            if sec_rem > 1:
+                sec_rem = int(sec_rem)
 
             # Clear old number
             if sec_rem < 10:
