@@ -76,9 +76,17 @@ def get_question(skill):
     # Division
     elif question_line[0] == "D":
         if random.randint(1, 2) == 1:
+            # Make sure no division by zero
+            while y == 0:
+                y = random.randint(int(question_line[3]), int(question_line[4]))
+
             question = "{} ÷ {}".format(z(x * y), z(y))
             answer = x
         else:
+            # Make sure no division by zero
+            while x == 0:
+                x = random.randint(int(question_line[1]), int(question_line[2]))
+
             question = "{} ÷ {}".format(z(x * y), z(x))
             answer = y
 
@@ -349,6 +357,10 @@ def main(stdscr):
 
                     # Clear typed answer
                     current_value = ""
+
+        # Custom mode
+        elif state == "custom":
+            pass
 
         # Game Over screen
         elif state == "fail" and key in [curses.KEY_ENTER, 10, 13]:
