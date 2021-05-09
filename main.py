@@ -316,8 +316,9 @@ def main(stdscr):
             elif key in [8, curses.KEY_BACKSPACE]:
                 current_value = current_value[:-1]
 
+            # Make sure the user submitted a number, not "--" or something
             # Enter, to submit an answer
-            elif key in [curses.KEY_ENTER, 10, 13]:
+            elif key in [curses.KEY_ENTER, 10, 13] and current_value.count("-") != len(current_value):
                 if len(current_value) > 0 and int(current_value) == answer:
                     # Update to next question
 
