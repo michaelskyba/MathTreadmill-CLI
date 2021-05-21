@@ -7,6 +7,13 @@ import os
 import random
 import math
 
+# More lag = less CPU usage
+# Less lag = less delay on input
+LAG = 10
+# LAG = 0 --> CPU% = 100
+# LAG = 10 --> CPU% = 2
+# LAG = 100 --> CPU% = "0.0" (htop)
+
 def z(number):
     if number < 0:
         return "({})".format(number)
@@ -199,6 +206,9 @@ def main(stdscr):
 
     # Main loop
     while 1:
+        # Reduce CPU usage (see top of file more info)
+        stdscr.timeout(LAG)
+
         # Get the pressed key
         key = stdscr.getch()
 
