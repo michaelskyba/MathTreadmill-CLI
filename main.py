@@ -168,6 +168,51 @@ def main_menu(stdscr, sel_row):
         else:
             text(option["text"], option["y"], stdscr)
 
+def custom_menu(stdscr, sel_row):
+    option_text = ["Select a level."]
+
+    # Add the level titles to the options list
+    with open("custom/levels") as custom_levels:
+        lines = custom_levels.readlines()
+
+        for line in lines:
+            if lines.index(line) == 0:
+                continue
+
+            option_text.append(line.split()[0])
+
+    # Calculate the y positions
+    y_positions = [2]
+    for number in range(2, len(option_text)):
+        if number % 2 == 1:
+            y_positions.append(y_positions[-1] + 1)
+        else:
+            y_positions.insert(0, y_positions[0] - 1)
+
+    # Add the y position for the "select a level" text
+    if y_positions[0] < -3:
+        y_positions.insert(0, y_positions[0] - 2)
+    else:
+        y_positions.insert(0, -5)
+
+    # Compile it into one list of dictionaries
+    options = []
+    for i in range(len(option_text)):
+        options.append({
+            "text": option_text[i],
+            "y": y_positions[i]
+            })
+
+    # Draw everything onto the screen
+    for index, option in enumerate(options):
+        if sel_row == index:
+            # This reverses the background colour for the selected option
+            stdscr.attron(curses.color_pair(1))
+            text(option["text"], option["y"], stdscr)
+            stdscr.attroff(curses.color_pair(1))
+
+        else:
+            text(option["text"], option["y"], stdscr)
 
 def main(stdscr):
     # Set up colours
@@ -254,8 +299,9 @@ def main(stdscr):
                     bars = round(sec_total / sec_rem * 20)
 
                 else:
-                    state = "custom"
-                    text("What would you like..?", 0, stdscr)
+                    state = "custom_menu"
+                    sel_row = 1
+                    custom_menu(stdscr, sel_row)
 
         # Auto Mode
         elif state == "auto":
@@ -368,8 +414,38 @@ def main(stdscr):
                     current_value = ""
 
         # Custom mode
-        elif state == "custom":
-            pass
+        elif state == "custom_menu":
+            # state = "custom_menu"
+            # sel_row = 1
+            # custom_menu(stdscr, sel_row)
+            # Pressing 'up' or 'k' selects the "Auto Mode" option
+            if key in [curses.KEY_UP, 107]:
+                sel_row = 1
+                custom_menu(stdscr, sel_row)
+
+            # Pressing 'down' or 'j' selects the "Custom Mode" option
+            elif key in [curses.KEY_DOWN, 106]:
+                sel_row = 2
+                custom_menu(stdscr, sel_row)
+
+            # Pressing enter goes into the option
+            # elif key in [curses.KEY_ENTER, 10, 13]:
+            #     stdscr.clear()
+
+            #     if sel_row == 1:
+            #         state = "auto"
+
+            #         question_object = get_question(skills[skill])
+            #         question = question_object["question"]
+            #         answer = question_object["answer"]
+
+            #         config_object = configure(skills[skill])
+            #         sec_total = config_object["total_time"]
+            #         sec_rem = sec_total
+            #         decrement = config_object["decrement"]
+            #         threshold = config_object["threshold"]
+
+            #         wrong = 0
 
         # Game Over screen
         elif state == "fail" and key in [curses.KEY_ENTER, 10, 13]:
