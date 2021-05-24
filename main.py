@@ -303,6 +303,10 @@ def main(stdscr):
                     sel_row = 1
                     custom_menu(stdscr, sel_row)
 
+                    # Get the number of levels
+                    with open("custom/levels") as custom_levels:
+                        number_of_custom_levels = len(custom_levels.readlines()) - 1
+
         # Auto Mode
         elif state == "auto":
             # Calculate bar numbers
@@ -415,17 +419,18 @@ def main(stdscr):
 
         # Custom mode
         elif state == "custom_menu":
-            # state = "custom_menu"
-            # sel_row = 1
-            # custom_menu(stdscr, sel_row)
-            # Pressing 'up' or 'k' selects the "Auto Mode" option
+            # Pressing 'up' or 'k' moves the selected row up
             if key in [curses.KEY_UP, 107]:
-                sel_row = 1
+                if sel_row > 1:
+                    sel_row -= 1
+
                 custom_menu(stdscr, sel_row)
 
             # Pressing 'down' or 'j' selects the "Custom Mode" option
             elif key in [curses.KEY_DOWN, 106]:
-                sel_row = 2
+                if sel_row < number_of_custom_levels:
+                    sel_row += 1
+
                 custom_menu(stdscr, sel_row)
 
             # Pressing enter goes into the option
