@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import curses
-import time
 import datetime
 import os
 import random
@@ -20,18 +19,25 @@ def z(number):
     else:
         return number
 
-def get_question(skill):
+def get_question(skill, questions_file="auto_questions"):
+    # Bind by default
+    question = ()
+    answer = ()
+
     # List of lines in the file that are for this skill
     skill_lines = []
 
     # Sample question file line: "2.2 M -10 -2 -10 -2"
-    with open("auto_questions") as auto_questions:
-        lines = auto_questions.readlines()
+    with open(questions_file) as questions:
+        lines = questions.readlines()
 
-        # Find the correct lines for the skill
-        for line in lines:
-            if line[:3] == skill:
-                skill_lines.append(line[4:])
+        if questions_file == "auto_questions":
+            # Find the correct lines for the skill
+            for line in lines:
+                if line[:3] == skill:
+                    skill_lines.append(line[4:])
+        else:
+            skill_lines = lines
 
     # Pick a random question type (multi-variable for readability)
     question_id = random.randint(0, len(skill_lines) - 1)
@@ -118,20 +124,29 @@ def get_question(skill):
             "answer": answer
             }
 
-def configure(skill):
-    with open("auto_config") as auto_config:
-        lines = auto_config.readlines()
+def configure(skill, skill_file="auto_config"):
+    with open(skill_file) as config_file:
+        lines = config_file.readlines()
 
         # Find the correct line for the skill
         # Sample skill config line: "2.3 25 0.75 13"
-        for line in lines:
-            if line[:3] == skill:
-                config = line[3:].split()
-                return {
-                        "total_time": int(float(config[0])),
-                        "decrement": float(config[1]),
-                        "threshold": int(float(config[2]))
-                        }
+        if skill_file == "auto_config":
+            for line in lines:
+                if line[:3] == skill:
+                    config = line[3:].split()
+                    return {
+                            "total_time": int(float(config[0])),
+                            "decrement": float(config[1]),
+                            "threshold": int(float(config[2]))
+                            }
+
+        # Custom mode, so we can assume that it's only one line
+        else:
+            config = lines[0].split()
+            return {
+                    "total_time": int(float(config[0])),
+                    "decrement": float(config[1])
+                    }
 
 # Print some text
 def text(text, y, stdscr):
@@ -168,18 +183,12 @@ def main_menu(stdscr, sel_row):
         else:
             text(option["text"], option["y"], stdscr)
 
-def custom_menu(stdscr, sel_row):
+def custom_menu(stdscr, sel_row, custom_levels):
     option_text = ["Select a level."]
 
     # Add the level titles to the options list
-    with open("custom/levels") as custom_levels:
-        lines = custom_levels.readlines()
-
-        for line in lines:
-            if lines.index(line) == 0:
-                continue
-
-            option_text.append(line.split()[0])
+    for level in custom_levels:
+        option_text.append(level["title"])
 
     # Calculate the y positions
     y_positions = [2]
@@ -222,12 +231,24 @@ def main(stdscr):
 
     skills = ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3", "2.4", "3.1", "3.2", "3.3", "3.4", "4.1", "4.2", "4.3", "4.4", "5.1", "5.2", "5.3", "5.4", "SSS"]
 
+    # Get things to be 'bound' by default (so that pyright is happy)
+    create = ()
+    current_value = ()
+    decrement = ()
+    threshold = ()
+    config_object = ()
+    custom_levels = ()
+    skill = ()
+    question = ()
+    answer = ()
+    sec_total = ()
+    question_start = ()
+    wrong = ()
+
     # Decide whether or not to create the file
-    create = True
 
     if os.path.exists("auto_progress"):
         create = False
-
         # If you have a progress file, get the saved skill from it
         with open("auto_progress") as auto_progress:
             try:
@@ -240,7 +261,6 @@ def main(stdscr):
     # Create the skills file if it doesn't exist
     if create:
         skill = 0
-
         with open("auto_progress", "w") as auto_progress:
             auto_progress.write("1.1")
 
@@ -280,11 +300,11 @@ def main(stdscr):
                 if sel_row == 1:
                     state = "auto"
 
-                    question_object = get_question(skills[skill])
+                    question_object = get_question(skills[skill]) # type: ignore
                     question = question_object["question"]
                     answer = question_object["answer"]
 
-                    config_object = configure(skills[skill])
+                    config_object = configure(skills[skill]) # type: ignore
                     sec_total = config_object["total_time"]
                     sec_rem = sec_total
                     decrement = config_object["decrement"]
@@ -299,24 +319,35 @@ def main(stdscr):
                     bars = round(sec_total / sec_rem * 20)
 
                 else:
+                    # User just pressed the "Custom" option in the main menu
+
+                    # Create an easy-to-access structure for the levels
+                    with open("custom/levels") as custom_levels_file:
+                        lines = custom_levels_file.readlines()[1:]
+                        custom_levels = []
+
+                        for line in lines:
+                            line_split = line.split()
+                            custom_levels.append({
+                                "title": line_split[0],
+                                "config": line_split[1],
+                                "questions": line_split[2]
+                                })
+
                     state = "custom_menu"
                     sel_row = 1
-                    custom_menu(stdscr, sel_row)
-
-                    # Get the number of levels
-                    with open("custom/levels") as custom_levels:
-                        number_of_custom_levels = len(custom_levels.readlines()) - 1
+                    custom_menu(stdscr, sel_row, custom_levels)
 
         # Auto Mode
-        elif state == "auto":
+        elif state == "auto" or state == "custom":
             # Calculate bar numbers
-            sec_rem = sec_total - (datetime.datetime.now() - question_start).seconds
+            sec_rem = sec_total - (datetime.datetime.now() - question_start).seconds # type: ignore
             sec_rem -= wrong # Split the bar in half every time you get it wrong
             bars = round(sec_rem / sec_total * 20)
 
             # Running out of time
             if sec_rem <= 0:
-                state = "fail"
+                state = "fail-{}".format(state)
 
                 stdscr.clear()
 
@@ -339,8 +370,11 @@ def main(stdscr):
             if sec_rem < 10:
                 sec_rem = " {}".format(sec_rem)
 
-            # Skill
-            text(str(skills[skill]), -5, stdscr)
+            # Skill or title
+            if state == "auto":
+                text(str(skills[skill]), -5, stdscr) # type: ignore
+            else:
+                text(custom_levels[sel_row - 1]["title"], -5, stdscr)
 
             # Question
             text("{} = ?".format(question), -1, stdscr)
@@ -363,7 +397,7 @@ def main(stdscr):
                     current_value = current_value[:-1]
 
             # Input negative numbers
-            if key == 45:
+            if key == 45 and len(current_value) == 0:
                 current_value += "-"
 
                 # Make sure value doesn't exceed space
@@ -374,10 +408,9 @@ def main(stdscr):
             elif key in [8, curses.KEY_BACKSPACE]:
                 current_value = current_value[:-1]
 
-            # Make sure the user submitted a number, not "--" or something
             # Enter, to submit an answer
-            elif key in [curses.KEY_ENTER, 10, 13] and current_value.count("-") != len(current_value):
-                if len(current_value) > 0 and int(current_value) == answer:
+            elif key in [curses.KEY_ENTER, 10, 13]:
+                if len(current_value) > 0 and int(current_value) == answer: # type: ignore
                     # Update to next question
 
                     # Clear screen to avoid extra characters
@@ -386,21 +419,26 @@ def main(stdscr):
                     # Use decrement
                     sec_total -= decrement
 
-                    # Go to next skill if you finish the current one
-                    if sec_total < threshold:
-                        skill += 1
+                    if state == "auto":
+                        # Go to next skill if you finish the current one
+                        if sec_total < threshold:
+                            skill += 1
 
-                        # Update the skill in the savefile
-                        with open("auto_progress", "w") as auto_progress:
-                            auto_progress.write(skills[skill])
+                            # Update the skill in the savefile
+                            with open("auto_progress", "w") as auto_progress:
+                                auto_progress.write(skills[skill])
 
-                        config_object = configure(skills[skill])
-                        sec_total = config_object["total_time"]
-                        decrement = config_object["decrement"]
-                        threshold = config_object["threshold"]
+                            config_object = configure(skills[skill])
+                            sec_total = config_object["total_time"]
+                            decrement = config_object["decrement"]
+                            threshold = config_object["threshold"]
 
                     # Get the new question
-                    question_object = get_question(skills[skill])
+                    if state == "auto":
+                        question_object = get_question(skills[skill]) # type: ignore
+                    else:
+                        filename = "custom/{}".format(custom_levels[sel_row - 1]["questions"])
+                        question_object = get_question(0, filename)
                     question = question_object["question"]
                     answer = question_object["answer"]
 
@@ -410,7 +448,7 @@ def main(stdscr):
 
                 elif len(current_value) > 0:
                     # First get the remaining seconds (it's currently a string)
-                    sec_rem = sec_total - (datetime.datetime.now() - question_start).seconds
+                    sec_rem = sec_total - (datetime.datetime.now() - question_start).seconds # type: ignore
                     sec_rem -= wrong
                     wrong += math.floor(sec_rem / 2)
 
@@ -424,49 +462,59 @@ def main(stdscr):
                 if sel_row > 1:
                     sel_row -= 1
 
-                custom_menu(stdscr, sel_row)
+                custom_menu(stdscr, sel_row, custom_levels)
 
-            # Pressing 'down' or 'j' selects the "Custom Mode" option
+            # Pressing 'down' or 'j' moves the selected row down
             elif key in [curses.KEY_DOWN, 106]:
-                if sel_row < number_of_custom_levels:
+                if sel_row < len(custom_levels):
                     sel_row += 1
 
-                custom_menu(stdscr, sel_row)
+                custom_menu(stdscr, sel_row, custom_levels)
 
-            # Pressing enter goes into the option
-            # elif key in [curses.KEY_ENTER, 10, 13]:
-            #     stdscr.clear()
+            # Pressing enter goes into the selected custom level
+            elif key in [curses.KEY_ENTER, 10, 13]:
+                stdscr.clear()
 
-            #     if sel_row == 1:
-            #         state = "auto"
+                state = "custom"
 
-            #         question_object = get_question(skills[skill])
-            #         question = question_object["question"]
-            #         answer = question_object["answer"]
+                filename = "custom/{}".format(custom_levels[sel_row - 1]["questions"])
+                question_object = get_question(0, filename)
+                question = question_object["question"]
+                answer = question_object["answer"]
 
-            #         config_object = configure(skills[skill])
-            #         sec_total = config_object["total_time"]
-            #         sec_rem = sec_total
-            #         decrement = config_object["decrement"]
-            #         threshold = config_object["threshold"]
+                filename = "custom/{}".format(custom_levels[sel_row - 1]["config"])
+                config_object = configure(0, filename)
+                sec_total = config_object["total_time"]
+                sec_rem = sec_total
+                decrement = config_object["decrement"]
 
-            #         wrong = 0
+                wrong = 0
+
+                current_value = ""
+
+                question_start = datetime.datetime.now()
+
+                bars = round(sec_total / sec_rem * 20)
 
         # Game Over screen
-        elif state == "fail" and key in [curses.KEY_ENTER, 10, 13]:
+        elif (state == "fail-auto" or state == "fail-custom") and key in [curses.KEY_ENTER, 10, 13]:
             # Reset
-            sec_total = config_object["total_time"]
+            sec_total = config_object["total_time"] # type: ignore
             wrong = 0
             current_value = ""
             question_start = datetime.datetime.now()
 
             # Get the new question
-            question_object = get_question(skills[skill])
+            if state == "fail-auto":
+                question_object = get_question(skills[skill]) # type: ignore
+            else:
+                filename = "custom/{}".format(custom_levels[sel_row - 1]["questions"])
+                question_object = get_question(0, filename)
             question = question_object["question"]
             answer = question_object["answer"]
 
             # Run everything again
-            state = "auto"
+            state = state[5:]
 
             # Remove noise from Game Over screen
             stdscr.clear()
