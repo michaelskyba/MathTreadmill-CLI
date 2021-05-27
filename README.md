@@ -25,5 +25,10 @@ A 'level' is a set of questions that you might want to practice together.
 
 If you've read the instructions and tinkered with the examples but still can't get something to work, email me at michael@michaelskyba.xyz or michaelskyba1411@gmail.com, and I'll try to help you out.
 
+## Supported Operating Systems
+The only 'officially' supported OS is GNU/Linux (i.e. I won't help you install
+it on Windows 10, for instance), but you should be able to get it working on
+anything that supports Python and ncurses.
+
 ## Screenshot
 ![Screenshot](https://michaelskyba.github.io/mt-TUI.png)
