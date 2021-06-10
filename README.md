@@ -12,6 +12,14 @@ or something similar to your shell's config file to make it faster to type!
 
 ``python /path/to/MathTreadmill-TUI`` will break, because the script needs to use the other files in the directory.
 
+### Controls
+- Up/Down arrow keys OR k/j: Move up or down, respectively, in menus
+- 0-9: Append a number to your answer
+- "-" (dash/minus): Add a negation sign to the start of your answer, only if it's blank
+- Enter: Submit your answer, or choose the currently selected option in a menu
+- q: Quit
+- f: Forfeit the current question, revealing the answer
+
 ## Making your own level
 A 'level' is a set of questions that you might want to practice together.
 1. Create a config file for your level, which will just have one line in the
