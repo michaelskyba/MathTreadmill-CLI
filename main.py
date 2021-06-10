@@ -346,7 +346,7 @@ def main(stdscr):
             bars = round(sec_rem / sec_total * 20)
 
             # Running out of time
-            if sec_rem <= 0:
+            if sec_rem <= 0 or key == 102:
                 state = "fail-{}".format(state)
 
                 stdscr.clear()
