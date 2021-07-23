@@ -231,19 +231,7 @@ def main(stdscr):
 
     skills = ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3", "2.4", "3.1", "3.2", "3.3", "3.4", "4.1", "4.2", "4.3", "4.4", "5.1", "5.2", "5.3", "5.4", "SSS"]
 
-    # Get things to be 'bound' by default (so that pyright is happy)
     create = True
-    current_value = ()
-    decrement = ()
-    threshold = ()
-    config_object = ()
-    custom_levels = ()
-    skill = ()
-    question = ()
-    answer = ()
-    sec_total = ()
-    question_start = ()
-    wrong = ()
 
     # Decide whether or not to create the file
 
@@ -300,11 +288,11 @@ def main(stdscr):
                 if sel_row == 1:
                     state = "auto"
 
-                    question_object = get_question(skills[skill]) # type: ignore
+                    question_object = get_question(skills[skill])
                     question = question_object["question"]
                     answer = question_object["answer"]
 
-                    config_object = configure(skills[skill]) # type: ignore
+                    config_object = configure(skills[skill])
                     sec_total = config_object["total_time"]
                     sec_rem = sec_total
                     decrement = config_object["decrement"]
@@ -341,7 +329,7 @@ def main(stdscr):
         # Auto Mode
         elif state == "auto" or state == "custom":
             # Calculate bar numbers
-            sec_rem = sec_total - (datetime.datetime.now() - question_start).seconds # type: ignore
+            sec_rem = sec_total - (datetime.datetime.now() - question_start).seconds
             sec_rem -= wrong # Split the bar in half every time you get it wrong
             bars = round(sec_rem / sec_total * 20)
 
@@ -372,7 +360,7 @@ def main(stdscr):
 
             # Skill or title
             if state == "auto":
-                text(str(skills[skill]), -5, stdscr) # type: ignore
+                text(str(skills[skill]), -5, stdscr)
             else:
                 text(custom_levels[sel_row - 1]["title"], -5, stdscr)
 
@@ -410,7 +398,7 @@ def main(stdscr):
 
             # Enter, to submit an answer
             elif key in [curses.KEY_ENTER, 10, 13]:
-                if len(current_value) > 0 and int(current_value) == answer: # type: ignore
+                if len(current_value) > 0 and int(current_value) == answer:
                     # Update to next question
 
                     # Clear screen to avoid extra characters
@@ -435,7 +423,7 @@ def main(stdscr):
 
                     # Get the new question
                     if state == "auto":
-                        question_object = get_question(skills[skill]) # type: ignore
+                        question_object = get_question(skills[skill])
                     else:
                         filename = "custom/{}".format(custom_levels[sel_row - 1]["questions"])
                         question_object = get_question(0, filename)
@@ -448,7 +436,7 @@ def main(stdscr):
 
                 elif len(current_value) > 0:
                     # First get the remaining seconds (it's currently a string)
-                    sec_rem = sec_total - (datetime.datetime.now() - question_start).seconds # type: ignore
+                    sec_rem = sec_total - (datetime.datetime.now() - question_start).seconds
                     sec_rem -= wrong
                     wrong += math.floor(sec_rem / 2)
 
@@ -499,14 +487,14 @@ def main(stdscr):
         # Game Over screen
         elif (state == "fail-auto" or state == "fail-custom") and key in [curses.KEY_ENTER, 10, 13]:
             # Reset
-            sec_total = config_object["total_time"] # type: ignore
+            sec_total = config_object["total_time"]
             wrong = 0
             current_value = ""
             question_start = datetime.datetime.now()
 
             # Get the new question
             if state == "fail-auto":
-                question_object = get_question(skills[skill]) # type: ignore
+                question_object = get_question(skills[skill])
             else:
                 filename = "custom/{}".format(custom_levels[sel_row - 1]["questions"])
                 question_object = get_question(0, filename)
