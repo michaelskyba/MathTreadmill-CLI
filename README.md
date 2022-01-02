@@ -39,4 +39,4 @@ it on Windows 10, for instance), but you should be able to get it working on
 anything that supports Python and ncurses.
 
 ## Screenshot
-![Screenshot](https://michaelskyba.github.io/mt-TUI.png)
+![Screenshot](https://michaelskyba.github.io/assets/mt-TUI.png)
