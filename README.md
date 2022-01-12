@@ -31,7 +31,8 @@ A 'level' is a set of questions that you might want to practice together.
    will have 'skill numbers' (e.g. 3.2), which you shouldn't include.
 3. Edit ``MathTreadmill-TUI/custom/levels`` to source the two files that you just made. Look inside the file for the syntax.
 
-If you've read the instructions and tinkered with the examples but still can't get something to work, email me at michael@michaelskyba.xyz or michaelskyba1411@gmail.com, and I'll try to help you out.
+If you've read the instructions and tinkered with the examples but still can't get something to work,
+email me at michaelskyba1411@gmail.com, and I'll try to help you out.
 
 ## Supported Operating Systems
 The only 'officially' supported OS is GNU/Linux (i.e. I won't help you install
